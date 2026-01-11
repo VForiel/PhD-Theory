@@ -18,7 +18,7 @@ import astropy.units as u
 from scipy import stats
 
 
-def get_vectors(ctx=None, nmc: int = 1000, size: int = 1000):
+def get_vectors(ctx=None, nmc: int = 1000, size: int = 1000, progress_callback=None):
     """Generate two sets of statistic vectors under H0 and H1.
 
     This simulates observations with and without companion(s) to build
@@ -39,6 +39,8 @@ def get_vectors(ctx=None, nmc: int = 1000, size: int = 1000):
             generate H1.
         nmc: Number of Monte-Carlo realizations.
         size: Number of samples per realization.
+        progress_callback (callable, optional): function accepting a float (0-1)
+            representing the progress.
 
     Returns:
         Tuple ``(T0, T1)`` where:
@@ -70,22 +72,29 @@ def get_vectors(ctx=None, nmc: int = 1000, size: int = 1000):
     fov = ctx.interferometer.fov.to(u.mas).value
 
     for i in range(nmc):
-        print(f'⌛ Generating vectors... {round(i / nmc * 100, 2)}%', end='\r')
+        if progress_callback:
+            progress_callback(i / nmc)
+        else:
+            print(f'⌛ Generating vectors... {round(i / nmc * 100, 2)}%', end='\r')
+        
         for j in range(size):
             for c in ctx_h1.target.companions:
                 c.θ = np.random.uniform(0, 2 * np.pi) * u.rad
                 c.ρ = np.random.uniform(fov / 10, fov) * u.mas
 
-            (_, k_h0, b_h0) = ctx_h0.observe()
-            (_, k_h1, b_h1) = ctx_h1.observe()
+            outs_h0 = ctx_h0.observe()
+            outs_h1 = ctx_h1.observe()
 
-            k_h0 /= b_h0
-            k_h1 /= b_h1
+            k_h0 = ctx_h0.interferometer.chip.process_outputs(outs_h0)
+            k_h1 = ctx_h1.interferometer.chip.process_outputs(outs_h1)
 
             T0[:, i, j] = k_h0
             T1[:, i, j] = k_h1
 
-    print('✅ Vectors generation complete')
+    if progress_callback:
+        progress_callback(1.0)
+    else:
+        print('✅ Vectors generation complete')
     return (np.concatenate(T0), np.concatenate(T1))
 
 
