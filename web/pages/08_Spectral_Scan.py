@@ -51,6 +51,13 @@ By scanning the wavelength and optimizing the null at each step ("scanning the n
 Any residual light or specific features observed in the dynamic mode could then be attributed to the off-axis planet (or uncorrected residues), allowing for **spectral characterization** even if the global band is dominated by chromatic leakage in static mode.
 """)
 
+st.success("""
+##### ✨ My Contribution
+Experimental verification of the Spectral Scan intuition.
+While the original idea of "scanning the null" came from Frantz Martinache, my contribution was to **implement the complete simulation framework** to verify this intuition. This work quantifies the gain, validates the feasibility, and prepares the ground for the upcoming experimental verification on the bench.
+""")
+
+
 st.divider()
 
 # Context configuration
@@ -179,3 +186,8 @@ st.markdown(r"""
 *   **Gray Curve ($\lambda_{cal} = \lambda_0$)**: Shows the "V-shape" degradation of the null depth when we move away from the calibration wavelength. This limits the usable bandwidth for high-contrast imaging.
 *   **Blue Curve ($\lambda_{cal} = \lambda$)**: Shows the achievable limit if we could effectively calibrate the chip at the specific observation wavelength (e.g., using a tunable laser source or extracting the solution from a spectral fit).
 """)
+
+with st.expander("🤝 Acknowledgements"):
+    st.markdown("""
+    *   **Frantz Martinache** for the original intuition of the spectral scan.
+    """)

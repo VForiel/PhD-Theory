@@ -54,6 +54,13 @@ Both methods aim to retrieve the ideal phase shifter settings (φ₁, ..., φ₁
 compensate for unknown phase aberrations (σ₁, ..., σ₁₄).
 """)
 
+st.success("""
+##### ✨ My Contribution
+I developed and implemented these two calibration algorithms specifically for the Kernel-Nulling photonic chip.
+*   **Genetic Algorithm**: Adapted for multi-parameter optimization in a high-dimensional space (14 phase shifters).
+*   **Obstruction Approach**: Developed a novel sequential calibration strategy that simplifies the problem into 1D optimizations, enabling robust recovery of the null even with large initial errors.
+""")
+
 # Information sections
 with st.expander("ℹ️ Trial & Error Details", expanded=False):
     st.subheader("Trial & Error")

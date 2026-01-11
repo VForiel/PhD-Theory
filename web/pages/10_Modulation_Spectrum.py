@@ -39,6 +39,11 @@ By calculating the Power Spectral Density (PSD) of the time series, we exploit t
 *   **Spectral Spreading**: If the modulation is not a pure sinusoid (harmonics), energy is spread over multiple peaks, reducing the signal-to-noise ratio of the main peak. This happens especially far from the star (fast and complex modulation). However, close to the Star, the modulation is slow and quasi-sinusoidal, which is ideal for this method. This is perfect because it is precisely the zone most difficult to access for other techniques!
 """)
 
+st.success("""
+##### ✨ My Contribution
+Application of the Modulation Spectrum to Kernel-Nulling for multi-planet detection. I demonstrated that this frequency analysis can be used to disentangle signals from multiple planets in the same field.
+""")
+
 # --- Context Configuration ---
 st.subheader("Configuration")
 

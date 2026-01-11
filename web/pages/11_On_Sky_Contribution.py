@@ -91,6 +91,11 @@ C(\rho, \theta) = \prod_n r'_n(\rho, \theta)
 $$
 """)
 
+st.success("""
+##### ✨ My Contribution
+Development of the Kernel-Nulling On-Sky Contribution Map. I adapted the image reconstruction concept to Kernel-Nulling, demonstrating that combining the rotated transmission maps weighted by the observed data (filtered for antisymmetry) allows for the precise localization of companions and the removal of degeneracy.
+""")
+
 st.divider()
 
 # --- Configuration ---
