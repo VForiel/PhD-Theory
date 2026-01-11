@@ -34,12 +34,12 @@ except ImportError:
 from utils.context_widget import context_widget
 
 st.set_page_config(
-    page_title="Photonic Architecture",
+    page_title="Exploded Architecture",
     page_icon="🕸️",
     layout="wide",
 )
 
-st.title("Photonic Architecture 🕸️")
+st.title("Exploded Architecture 🕸️")
 
 st.markdown(r"""
 ## Component Overview
