@@ -435,7 +435,7 @@ class SuperKN(Chip):
     
     # Plotting ----------------------------------------------------------------
 
-    def plot_output_phase(self, λ: u.Quantity, ψ: Optional[np.ndarray]=None, plot: bool = True) -> Optional[Any]:
+    def plot_output_phase(self, λ: u.Quantity, ψ: Optional[np.ndarray]=None, plot: bool = True, n_cols: Optional[int] = None, ref_input1: bool = True) -> Optional[Any]:
         """Plot output phases and amplitudes of the nuller.
 
         Computes output responses for each isolated input and plots the phase
@@ -445,6 +445,8 @@ class SuperKN(Chip):
             λ (u.Quantity): Wavelength for the simulation.
             ψ (Optional[np.ndarray]): Input complex amplitudes (default [0.5,...]).
             plot (bool): If ``True``, display the figure; if ``False``, return the image bytes.
+            n_cols (Optional[int]): Number of columns for the plot grid. If None, all plots are on a single row.
+            ref_input1 (bool): If ``True``, use Input 1 (Bright output) as global phase reference (set to 0°).
         """
         if ψ is None:
             ψ = np.array([0.5 + 0j, 0.5 + 0j, 0.5 + 0j, 0.5 + 0j])
@@ -458,33 +460,64 @@ class SuperKN(Chip):
         out3 = self.get_output_fields(ψ3, λ)
         out4 = self.get_output_fields(ψ4, λ)
 
-        # Normalize out1 so its first element (Bright) has phase 0
-        if len(out1) > 0:
+        # Global Phase Reference: Input 1 (Bright)
+        if ref_input1 and len(out1) > 0:
              ref_phase = np.angle(out1[0])
-             out1 = out1 * np.exp(-1j * ref_phase)
+             phasor = np.exp(-1j * ref_phase)
+             out1 = out1 * phasor
+             out2 = out2 * phasor
+             out3 = out3 * phasor
+             out4 = out4 * phasor
+
+
         
         n_out = len(out1)
         outs = np.array([out1, out2, out3, out4])
 
-        _, axs = plt.subplots(1, n_out, figsize=(4*n_out,4), subplot_kw={'projection': 'polar'})
+        # Grid layout configuration
+        if n_cols is None:
+            n_cols = n_out
         
+        n_rows = int(np.ceil(n_out / n_cols))
+        
+        _, axs = plt.subplots(n_rows, n_cols, figsize=(4*n_cols, 4*n_rows), subplot_kw={'projection': 'polar'})
+        
+        # Flatten for easy iteration
         if n_out == 1:
             axs = [axs]
+        else:
+            axs = np.atleast_1d(axs).flatten()
 
-        for i in range(n_out):
-            colors = ['yellow', 'green', 'red', 'blue']
-            for j, out in enumerate(outs):
-                val = out[i]
-                axs[i].scatter(np.angle(val), np.abs(val), color=colors[j], label=f'Input {j + 1}', alpha=0.5)
-                axs[i].plot([0, np.angle(val)], [0, np.abs(val)**2], color=colors[j], alpha=0.5)
-            
-            axs[i].set_title(f'{self._raw_output_labels[i]} output')
+        m = np.max(np.abs(outs))
 
-        m = np.max(np.abs(outs)**2)
-        for ax in axs:
-            ax.set_ylim(0, m)
+        for i in range(len(axs)):
+            ax = axs[i]
+            if i < n_out:
+                colors = ['gold', 'forestgreen', 'red', 'blue'] # Adjusted for visibility
+                for j, out in enumerate(outs):
+                    val = out[i]
+                    # Vector arrow
+                    ax.annotate(
+                        "",
+                        xy=(np.angle(val), np.abs(val)),
+                        xytext=(0, 0),
+                        textcoords='data',
+                        arrowprops=dict(arrowstyle="->", color=colors[j], lw=2.0, alpha=0.8)
+                    )
+                    # Marker (tip) - mainly for legend
+                    ax.scatter(np.angle(val), np.abs(val), color=colors[j], label=f'Input {j + 1}', s=20, alpha=1.0)
+                
+                ax.set_title(f'{self._raw_output_labels[i]} output')
+                ax.set_ylim(0, m * 1.1)
+            else:
+                ax.axis('off')
         
-        axs[0].legend()
+        # Legend positioning depends on layout
+        if n_rows > 1:
+            axs[0].legend(loc='upper right', bbox_to_anchor=(1.3, 1.1), fontsize='small')
+        else:
+            axs[0].legend(loc='upper right', bbox_to_anchor=(1.1, 1.1), fontsize='small')
+            
         if not plot:
             plot = BytesIO()
             plt.savefig(plot, format='png')
