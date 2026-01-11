@@ -69,7 +69,7 @@ col_params1, col_params2 = st.columns(2)
 with col_params1:
     st.markdown("**Planet Parameters (Simulation)**")
     rho_mas = st.slider("Separation (mas)", 0.1, 10.0, 2.0, 0.1, key="main_rho")
-    theta_deg = st.slider("Position Angle (deg)", -180.0, 180.0, 45.0, 1.0, key="main_theta")
+    theta_deg = st.slider("Polar Angle (0°=East)", 0.0, 360.0, 0.0, 1.0, key="main_theta")
     contrast_log = st.slider("Log10 Contrast", -10.0, -1.0, -4.0, 0.1, key="main_contrast")
 
 with col_params2:
@@ -88,7 +88,7 @@ ctx_obs.Γ = gamma_nm * u.nm
 
 # 3. Context Override (Planet)
 c = 10**contrast_log
-θ = theta_deg * u.deg
+θ = theta_deg * u.deg # Math Convention: 0=East, 90=North
 ρ = rho_mas * u.mas
 ctx_obs.target.companions = [Companion(c=c, ρ=ρ, θ=θ, name="P1 Demo")]
 
@@ -109,8 +109,8 @@ extent = [-fov/2, fov/2, -fov/2, fov/2]
 comp = ctx_obs.target.companions[0]
 radius = comp.ρ.to(u.mas).value
 angle = comp.θ.to(u.rad).value
-x_p = radius * np.sin(angle)
-y_p = radius * np.cos(angle)
+x_p = radius * np.cos(angle)
+y_p = radius * np.sin(angle)
 
 
 # --- Compute Time Series ---

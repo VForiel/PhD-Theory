@@ -343,7 +343,7 @@ def context_widget(
                     "Name": c.name,
                     "Contrast": float(c.c),
                     "Separation (mas)": float(c.ρ.to(u.mas).value),
-                    "PA (deg)": float(c.θ.to(u.deg).value),
+                    "Polar Angle (0°=East)": float(c.θ.to(u.deg).value),
                 }
                 for c in ctx.target.companions
             ]
@@ -351,10 +351,10 @@ def context_widget(
             if comp_data:
                 df_comp = pd.DataFrame(comp_data)
             else:
-                df_comp = pd.DataFrame(columns=["Name", "Contrast", "Separation (mas)", "PA (deg)"])
+                df_comp = pd.DataFrame(columns=["Name", "Contrast", "Separation (mas)", "Polar Angle (0°=East)"])
             
             # Ensure numeric columns are float
-            for col in ["Contrast", "Separation (mas)", "PA (deg)"]:
+            for col in ["Contrast", "Separation (mas)", "Polar Angle (0°=East)"]:
                 if col in df_comp.columns:
                      df_comp[col] = df_comp[col].astype(float)
 
@@ -419,7 +419,7 @@ def context_widget(
                     cname = str(row.get("Name", "Companion"))
                     contrast = float(row.get("Contrast", 0.0))
                     sep_mas = float(row.get("Separation (mas)", 0.0))
-                    pa_deg = float(row.get("PA (deg)", 0.0))
+                    pa_deg = float(row.get("Polar Angle (0°=East)", 0.0))
                     companions.append(Companion(c=contrast, ρ=sep_mas * u.mas, θ=pa_deg * u.deg, name=cname))
 
             # Build target

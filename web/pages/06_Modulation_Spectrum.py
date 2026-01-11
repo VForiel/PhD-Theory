@@ -75,7 +75,7 @@ with col_sim1:
     for i in range(nb_planets):
         with st.expander(f"Planet {i+1}", expanded=(i==0)):
             rho = st.slider(f"P{i+1} Separation (mas)", 0.1, 15.0, 2.0 * (i+1), 0.1)
-            theta = st.slider(f"P{i+1} Angle (deg)", -180, 180, 45 * (i+1), 10)
+            theta = st.slider(f"P{i+1} Polar Angle (0°=East)", 0.0, 360.0, float((45 * (i+1)) % 360), 1.0)
             contrast = st.slider(f"P{i+1} Contrast (Log10)", -8.0, -2.0, -4.0, 0.1)
             companions.append({"rho": rho, "theta": theta, "c": 10**contrast})
 

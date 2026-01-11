@@ -92,6 +92,11 @@ st.header("Interactive Simulation")
 # Configure Context
 ctx = context_widget()
 
+# Force ideal component parameters (φ=0, σ=0) for this simulation
+ctx.interferometer.chip.φ = np.zeros(14) * u.nm
+ctx.interferometer.chip.σ = np.zeros(14) * u.nm
+st.info("ℹ️ **Simulation Note:** The photonic component is forced to be **ideal** (no phase errors, no manufacturing defects) for this demonstration.")
+
 col_left, col_right = st.columns([1, 1.5])
 
 # --- Controls (Left Column) ---
@@ -123,11 +128,11 @@ with col_left:
         step=max(0.1, max_sep/100.0) 
     )
     pa_deg = st.slider(
-        "Position Angle (°)",
+        "Polar Angle (0°=East)",
         min_value=0.0,
         max_value=360.0,
         value=0.0,
-        step=15.0
+        step=1.0
     )
     log_contrast = st.slider(
         "Contrast (log10)",
@@ -156,7 +161,7 @@ ctx.target.companions.append(Companion(
     name="Planet",
     c=contrast,
     ρ=sep_mas * u.mas,
-    θ=pa_deg * u.deg
+    θ=pa_deg * u.deg # Math Convention: 0=East, 90=North
 ))
 
 # Ensure we have a SuperKN chip (Kernel Nuller)
@@ -173,6 +178,8 @@ if not isinstance(ctx.interferometer.chip, SuperKN):
     # Let's assume standard defaults for now.
     kn_chip = SuperKN(φ=phi, σ=sigma, λ0=ctx.interferometer.λ)
     ctx.interferometer.chip = kn_chip
+
+
 
 # --- Visualization (Right Column) ---
 with col_right:
@@ -492,8 +499,10 @@ with st.spinner("Computing transmission maps..."):
         # But here X label is dRA. If +dRA is Right, that's West.
         # Let's stick to Cartesian x=RA, y=Dec for simplicity unless specified.
         
-        p_x = sep_mas * np.sin(np.deg2rad(pa_deg))
-        p_y = sep_mas * np.cos(np.deg2rad(pa_deg))
+        # Plotting the planet marker
+        # Math Convention: PA=0 is East (+X), PA=90 is North (+Y)
+        p_x = sep_mas * np.cos(np.deg2rad(pa_deg))
+        p_y = sep_mas * np.sin(np.deg2rad(pa_deg))
         
         # Planet
         ax.scatter(p_x, p_y, color='lime', marker='o', s=50, edgecolors='black', label='Planet', zorder=10)
