@@ -35,9 +35,25 @@ st.title("📊 Statistical Analysis")
 
 # --- Overview ---
 st.header("Overview")
-st.markdown(r"""
-Statistical analysis is crucial for determining the presence of a planet signal buried in noise.
 
+col1, col2 = st.columns([2,1])
+
+with col1:
+    st.markdown(r"""
+    Statistical analysis is crucial for determining the presence of a planet signal buried in noise.
+
+    The planet signal creates several potential features in the data distribution that we aim to detect:
+    1.  **Shift**: A global displacement of the distribution (if the signal is constant).
+    2.  **Flattening**: A spread of the distribution around its center (variance increase).
+    3.  **Asymmetry**: A skewness introduced by the signal.
+    4.  **Bimodality**: The appearance of two peaks in the distribution (e.g., if the signal modulates).
+    """)
+
+with col2:
+    img_path = ROOT / "docs" / "img" / "Kernel-dist.png"
+    st.image(str(img_path), caption="Effect of a planet signal on the Kernel distribution.")
+
+st.markdown("""
 The **Likelihood Ratio** is theoretically the optimal test (Neyman-Pearson lemma). However, in practice, it is often **inapplicable** because it requires knowing the exact analytical form of the data distribution (which is often unknown or changing).
 
 Therefore, we study other **test statistics** that are robust and do not require prior knowledge of the distribution.
