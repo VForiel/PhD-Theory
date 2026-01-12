@@ -8,17 +8,13 @@ from __future__ import annotations
 
 import numpy as np
 import matplotlib.pyplot as plt
-try:
-    plt.rcParams['image.origin'] = 'lower'
-except Exception:
-    # Certains backends simplifiés peuvent ne pas accepter les assignations
-    pass
+plt.rcParams['image.origin'] = 'lower'
 from copy import deepcopy as copy
 import astropy.units as u
 from scipy import stats
 
 
-def get_vectors(ctx=None, nmc: int = 1000, size: int = 1000, progress_callback=None):
+def get_vectors(ctx=None, nmc: int = 1000, size: int = 1000, progress_callback=None, flatten: bool = True):
     """Generate two sets of statistic vectors under H0 and H1.
 
     This simulates observations with and without companion(s) to build
@@ -41,11 +37,13 @@ def get_vectors(ctx=None, nmc: int = 1000, size: int = 1000, progress_callback=N
         size: Number of samples per realization.
         progress_callback (callable, optional): function accepting a float (0-1)
             representing the progress.
+        flatten (bool, optional): If True, concatenates independent kernel outputs.
+            If False, returns shapes (3, nmc, size). Defaults to True.
 
     Returns:
         Tuple ``(T0, T1)`` where:
-        - T0: Concatenated vectors under H0, shape ``(3 * nmc * size,)``.
-        - T1: Concatenated vectors under H1, shape ``(3 * nmc * size,)``.
+        - T0: Concatenated vectors under H0, shape ``(3 * nmc * size,)`` if flatten=True.
+        - T1: Concatenated vectors under H1, shape ``(3 * nmc * size,)`` if flatten=True.
 
     Raises:
         ValueError: If ``ctx`` contains no companions.
@@ -95,7 +93,11 @@ def get_vectors(ctx=None, nmc: int = 1000, size: int = 1000, progress_callback=N
         progress_callback(1.0)
     else:
         print('✅ Vectors generation complete')
-    return (np.concatenate(T0), np.concatenate(T1))
+    
+    if flatten:
+        return (np.concatenate(T0), np.concatenate(T1))
+    else:
+        return (T0, T1)
 
 
 def mean(u, v):

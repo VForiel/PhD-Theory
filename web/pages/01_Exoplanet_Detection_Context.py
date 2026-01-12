@@ -24,7 +24,7 @@ Since the discovery of *51 Pegasi b* in 1995, more than 5000 exoplanets have bee
 However, finding a "Twin Earth" (a rocky planet in the habitable zone of a solar-type star) remains a major technological challenge.
 """)
 
-st.header("1. Overview of Detection Methods")
+st.header("Overview of Detection Methods")
 
 st.markdown("Exoplanet detection relies on various techniques, each sensitive to different planet populations.")
 
@@ -123,7 +123,7 @@ with cols[1]:
 
 st.divider()
 
-st.header("2. Challenges of Direct Imaging")
+st.header("Challenges of Direct Imaging")
 
 st.markdown(r"""
 To image a habitable Earth around a solar-type star, we must overcome two major physical obstacles:
@@ -141,7 +141,7 @@ To image a habitable Earth around a solar-type star, we must overcome two major 
 
 st.divider()
 
-st.header("3. The Solution: Nulling Interferometry")
+st.header("The Solution: Nulling Interferometry")
 
 col_nulling_txt, col_nulling_img = st.columns([1, 1])
 
@@ -167,7 +167,7 @@ with col_nulling_img:
 
 st.divider()
 
-st.header("4. Challenges of Interferometry")
+st.header("Challenges of Interferometry")
 
 st.markdown("""
 While the principle is elegant, its practical implementation is formidable:
