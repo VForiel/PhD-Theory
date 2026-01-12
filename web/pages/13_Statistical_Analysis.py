@@ -269,7 +269,7 @@ if run_btn:
     with st.spinner(f"Simulating {nmc} samples with {size} points..."):
         p_bar = st.progress(0, text="Generating vectors...")
         # Get separated kernels (flatten=False) -> shapes (3, nmc, size)
-        t0_all, t1_all = ts.get_vectors(ctx=ctx, nmc=nmc, size=size, progress_callback=lambda x: p_bar.progress(x, text=f"Simulating... {int(x*100)}%"), flatten=False)
+        t0_all, t1_all = ts.get_vectors(ctx=ctx, nmc=nmc, size=size, progress_callback=lambda x: p_bar.progress(x, text=f"Simulating... {int(x*100)}%"), flatten=False, randomize_position=False)
         p_bar.empty()
         st.success("Data generated successfully.")
 
@@ -369,7 +369,7 @@ if run_btn:
                 fig_map, ax_map = plt.subplots(figsize=(4, 4))
                 if k < maps.shape[0]:
                     # Use 'bwr' (Blue-White-Red) as requested
-                    im = ax_map.imshow(maps[k], extent=[-fov, fov, -fov, fov], origin='lower', cmap='bwr')
+                    im = ax_map.imshow(maps[k], extent=[-fov/2, fov/2, -fov/2, fov/2], origin='lower', cmap='bwr')
                     # Overlay Star
                     ax_map.scatter(0, 0, marker='*', s=150, color='yellow', edgecolors='black', label="Star", zorder=10)
                     # Overlay Planet if present
@@ -429,7 +429,7 @@ if run_btn:
                     with cols_m[k]:
                         fig_map, ax = plt.subplots(figsize=(3, 3))
                         if k < maps.shape[0]:
-                            im = ax.imshow(maps[k], extent=[-fov, fov, -fov, fov], origin='lower', cmap='bwr')
+                            im = ax.imshow(maps[k], extent=[-fov/2, fov/2, -fov/2, fov/2], origin='lower', cmap='bwr')
                             ax.scatter(0, 0, marker='*', s=100, color='yellow', edgecolors='black', label="Star", zorder=10)
                             if x_p is not None:
                                 ax.plot(x_p, y_p, 'o', color='lime', markersize=6, label="Planet", markeredgecolor='k', zorder=11)

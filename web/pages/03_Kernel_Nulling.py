@@ -398,7 +398,7 @@ with st.spinner("Computing distributions..."):
     safe_hist(ax3, K_star, bins=30, color='k', alpha=1.0, density=True, histtype='step', linestyle='--', label='Star Only')
     
     ax3.set_xlabel("Kernel Signal")
-    ax3.set_title(f"Kernel (D1 - D2)\nMean: {np.mean(K):.2e}, Std: {np.std(K):.2e}")
+    ax3.set_title(f"Kernel (D1 - D2)\nMean: {np.mean(K):.2e}")
     ax3.axvline(0, color='k', linestyle='--', alpha=0.3)
     ax3.legend()
 

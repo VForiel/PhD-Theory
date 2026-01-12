@@ -14,7 +14,7 @@ import astropy.units as u
 from scipy import stats
 
 
-def get_vectors(ctx=None, nmc: int = 1000, size: int = 1000, progress_callback=None, flatten: bool = True):
+def get_vectors(ctx=None, nmc: int = 1000, size: int = 1000, progress_callback=None, flatten: bool = True, randomize_position: bool = False):
     """Generate two sets of statistic vectors under H0 and H1.
 
     This simulates observations with and without companion(s) to build
@@ -39,6 +39,8 @@ def get_vectors(ctx=None, nmc: int = 1000, size: int = 1000, progress_callback=N
             representing the progress.
         flatten (bool, optional): If True, concatenates independent kernel outputs.
             If False, returns shapes (3, nmc, size). Defaults to True.
+        randomize_position (bool, optional): If True, randomizes companion position (uniform in FOV) for each sample.
+            If False, uses the fixed position defined in `ctx`. Defaults to False.
 
     Returns:
         Tuple ``(T0, T1)`` where:
@@ -76,9 +78,10 @@ def get_vectors(ctx=None, nmc: int = 1000, size: int = 1000, progress_callback=N
             print(f'⌛ Generating vectors... {round(i / nmc * 100, 2)}%', end='\r')
         
         for j in range(size):
-            for c in ctx_h1.target.companions:
-                c.θ = np.random.uniform(0, 2 * np.pi) * u.rad
-                c.ρ = np.random.uniform(fov / 10, fov) * u.mas
+            if randomize_position:
+                for c in ctx_h1.target.companions:
+                    c.θ = np.random.uniform(0, 2 * np.pi) * u.rad
+                    c.ρ = np.random.uniform(fov / 10, fov) * u.mas
 
             outs_h0 = ctx_h0.observe()
             outs_h1 = ctx_h1.observe()
