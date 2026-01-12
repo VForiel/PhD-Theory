@@ -405,3 +405,18 @@ if run_btn:
                         st.pyplot(fig_dist)
                 
                 st.caption("Top: $\eta$ Maps. Bottom: H0/H1 Distributions. Separability correlates with Map intensity at planet location.")
+
+st.divider()
+
+# --- Conclusion ---
+st.header("Conclusion")
+st.markdown(r"""
+We have seen that we can compare different test statistics ($\mathcal{T}$) and determine which one performs best in a given context compared to the others.
+However, this approach remains a **blind comparison**: we do not know if there exists a test statistic $\mathcal{T}_{opt}$ strictly better than the best one we found.
+
+Fortunately, the **Neyman-Pearson lemma** tells us that such a test exists and is given by the **Likelihood Ratio**:
+$$
+\Lambda(x) = \frac{\mathcal{L}(x|H_1)}{\mathcal{L}(x|H_0)}
+$$
+The problem is that this requires an analytical knowledge of the probability density functions (PDF) of our data under both hypotheses $P(x|H_0)$ and $P(x|H_1)$.
+""")
