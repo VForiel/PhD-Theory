@@ -31,36 +31,121 @@ st.set_page_config(
 
 st.title("📉 Distribution Model")
 
+st.header("Overview")
+
 st.markdown(r"""
-To implement the Likelihood Ratio test, we need an analytical model of the distribution of our test statistic under $H_0$ and $H_1$.
+In order to perform deep statistical analysis, we need an analytical model of the distribution of our test statistic under $\mathcal{H}_0$ and $\mathcal{H}_1$.
 This page allows you to explore the distribution of the Kernel Nuller output and fit different analytical models to it.
 """)
 
-tab_overview, tab_star, tab_planet = st.tabs(["Analysis Goal", "Star Models", "Planet Models"])
-
-with tab_overview:
-    st.markdown("""
-    The goal is to identify the statistical signature of the planet signal against the stellar leakage and instrumental noise.
-    - **Star Only**: Typically dominated by photon noise and instrumental residuals, often exhibiting heavy tails (super-Poissonian).
-    - **Planet Only**: Represents the coherent signal from the planet, modulated by the shifting interference pattern.
-    """)
+tab_star, tab_planet = st.tabs(["Star Models", "Planet Models"])
 
 with tab_star:
-    st.markdown("""
-    **Models for Stellar Leakage & Noise:**
+    st.markdown("**Models for stellar leakage**")
+    t_imb, t_cauchy, t_laplace = st.tabs(["IMB", "Cauchy", "Laplace"])
     
-    *   **IMB (Intensity Mismatch Balance)**: A physics-based model derived from the statistics of intensity mismatches in the beam combiner, specifically designed for nulling interferometry.
-    *   **Cauchy**: A heavy-tailed distribution ($\sim 1/x^2$) often used as a generic baseline for non-Gaussian noise with frequent outliers.
-    *   **Laplace**: A double exponential distribution ($\sim e^{-|x|}$), sharper than Gaussian but less heavy-tailed than Cauchy.
-    """)
+    with t_imb:
+        c1, c2 = st.columns([2, 1])
+        with c1:
+            st.markdown(r"""
+            **Intensity Mismatch Balance (IMB)**
+            
+            Proposed by Dannert et al. (2025) for nulling interferometry.
+            It models the distribution of the output signal when dominated by intensity mismatches between the beams.
+            Mathematically, it relates to the Bessel K function, generalizing distributions that arise from the product of Gaussian variables.
+            
+            **Analytic Form:**  
+            $$f(x; \mu, \sigma, \nu) \propto \left| \frac{x-\mu}{\sigma} \right|^{\nu/2} K_{\nu/2}\left( \left| \frac{x-\mu}{\sigma} \right| \right)$$
+            *(Approximation of form)*
+            
+            **Parameters & Constraints:**
+            - $\mu \in \mathbb{R}$: Location parameter (mean).
+            - $\sigma > 0$: Scale parameter, width of the core.
+            - $\nu > 0$: Shape parameter (degrees of freedom). Small $\nu$ $\to$ heavy tails, Large $\nu$ $\to$ Gaussian-like.
+            """)
+        with c2:
+            st.image(str(WEB / "assets/img/models/imb_plot.png"), caption="Effect of ν on tail weight")
+
+    with t_cauchy:
+        c1, c2 = st.columns([2, 1])
+        with c1:
+            st.markdown(r"""
+            **Cauchy Distribution**
+            
+            A heavy-tailed distribution that arises as the ratio of two independent standard normal variables.
+            It is notable for having undefined mean and variance. In physics, it describes resonance shapes (Lorentzian).
+            In our context, it serves as a robust baseline for data with frequent extreme outliers.
+            
+            **Analytic Form:**
+            $$f(x; x_0, \gamma) = \frac{1}{\pi\gamma \left[1 + \left(\frac{x-x_0}{\gamma}\right)^2\right]}$$
+            
+            **Parameters & Constraints:**
+            - $x_0 \in \mathbb{R}$: Location parameter (peak), median.
+            - $\gamma > 0$: Scale parameter (HWHM).
+            """)
+        with c2:
+            st.image(str(WEB / "assets/img/models/cauchy_plot.png"), caption="Effect of scale γ")
+
+    with t_laplace:
+        c1, c2 = st.columns([2, 1])
+        with c1:
+            st.markdown(r"""
+            **Laplace Distribution**
+            
+            The distribution of the difference of two independent exponential random variables.
+            It has fatter tails than a Gaussian but thinner than Cauchy. It is peaked at the mean.
+            
+            **Analytic Form:**
+            $$f(x; \mu, b) = \frac{1}{2b} \exp \left( - \frac{|x-\mu|}{b} \right)$$
+            
+            **Parameters & Constraints:**
+            - $\mu \in \mathbb{R}$: Location parameter.
+            - $b > 0$: Scale parameter (diversity). Variance is $2b^2$.
+            """)
+        with c2:
+            st.image(str(WEB / "assets/img/models/laplace_plot.png"), caption="Effect of diversity b")
 
 with tab_planet:
-    st.markdown("""
-    **Models for Planetary Signal:**
+    st.markdown("**Models for companion contribution**")
+    t_beta, t_gamma = st.tabs(["Beta", "Gamma"])
     
-    *   **Beta**: A flexible bounded distribution $[0, 1]$. In the context of nulling, the planet signal intensity fluctuates between constructive and destructive interference, naturally fitting a bounded domain.
-    *   **Gamma**: A generalization of the exponential distribution, often used to model sum of squared Gaussian variables (Chi-squared like), relevant for intensity distributions.
-    """)
+    with t_beta:
+        c1, c2 = st.columns([2, 1])
+        with c1:
+            st.markdown(r"""
+            **Beta Distribution**
+            
+            A flexible distribution defined on the bounded interval $[0, 1]$.
+            In the context of nulling, the planet signal intensity fluctuates between zero (destructive) and a maximum (constructive interference), naturally fitting a bounded domain.
+            
+            **Analytic Form:**
+            $$f(x; \alpha, \beta) \propto x^{\alpha-1} (1-x)^{\beta-1}$$
+            
+            **Parameters & Constraints:**
+            - $\alpha > 0$: Shape parameter 1.
+            - $\beta > 0$: Shape parameter 2.
+            """)
+        with c2:
+            st.image(str(WEB / "assets/img/models/beta_plot.png"), caption="Various Beta shapes")
+
+    with t_gamma:
+        c1, c2 = st.columns([2, 1])
+        with c1:
+            st.markdown(r"""
+            **Gamma Distribution**
+            
+            A generalization of the exponential distribution, often used to model the sum of squared Gaussian variables (Chi-squared like).
+            Relevant for intensity distributions where the signal is the sum of field amplitudes squared.
+            
+            **Analytic Form:**
+            $$f(x; k, \theta) = \frac{x^{k-1} e^{-x/\theta}}{\theta^k \Gamma(k)}$$
+            
+            **Parameters & Constraints:**
+            - $k > 0$: Shape parameter.
+            - $\theta > 0$: Scale parameter. Mean is $k\theta$, Variance is $k\theta^2$.
+            """)
+        with c2:
+            st.image(str(WEB / "assets/img/models/gamma_plot.png"), caption="Effect of shape k")
 
 st.divider()
 
