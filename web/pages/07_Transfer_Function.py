@@ -27,14 +27,14 @@ st.header("Matrix Composition")
 st.latex(r"M_{global} = R_{layer} \cdot X_{23,45} \cdot P_{9-14} \cdot Y_{splitter} \cdot N_{layer} \cdot X_{2-3} \cdot P_{5-8} \cdot N_{layer} \cdot P_{1-4}")
 
 # --- Load Matrices ---
-matrices_file = current_dir / "matrices.json"
+matrices_file = current_dir.parent / "assets" / "transfer_function" / "matrices.json"
 matrices_data = {}
 if matrices_file.exists():
     with open(matrices_file, 'r', encoding='utf-8') as f:
         matrices_data = json.load(f)
         
 # Load Global Matrix
-global_matrix_file = current_dir / "transfer_matrix.txt"
+global_matrix_file = current_dir.parent / "assets" / "transfer_function" / "transfer_matrix.txt"
 global_matrix_content = ""
 if global_matrix_file.exists():
     with open(global_matrix_file, 'r', encoding='utf-8') as f:
