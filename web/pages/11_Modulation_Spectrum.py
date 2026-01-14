@@ -65,8 +65,6 @@ base_ctx.interferometer.chip.φ = np.zeros(14) * u.nm
 base_ctx.interferometer.chip.σ = np.zeros(14) * u.nm
 st.info("ℹ️ **Simulation Note:** The photonic component is forced to be **ideal** (no phase errors, no manufacturing defects) for this demonstration.")
 
-st.divider()
-
 # --- Simulation Controls (Main Layout) ---
 
 col_sim1, col_sim2 = st.columns(2)

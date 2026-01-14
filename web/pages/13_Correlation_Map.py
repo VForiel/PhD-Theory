@@ -80,7 +80,6 @@ This map allows identifying the position of companions by finding the local maxi
 st.divider()
 
 # --- Configuration ---
-st.subheader("Configuration")
 
 presets = {
     "VLTI": Context.get_VLTI(),
@@ -104,19 +103,18 @@ def setup_context(c: Context) -> Context:
 default_ctx = copy(presets["VLTI"])
 default_ctx = setup_context(default_ctx)
 
+# --- Parameters ---
+st.subheader("Simulation Parameters")
+
 ctx = context_widget(
     key_prefix="correl_map",
     presets=presets,
     default_preset="VLTI",
-    expanded=True,
+    expanded=False,
     show_advanced=True,
     initial_context=default_ctx,
 )
 
-st.divider()
-
-# --- Parameters ---
-st.subheader("Simulation Parameters")
 col1, col2 = st.columns(2)
 with col1:
     resolution = st.slider("Map Resolution (pixels)", 20, 150, 60, step=10)

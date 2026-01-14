@@ -41,6 +41,15 @@ Where $p(x|H_0)$ and $p(x|H_1)$ are the probability density functions of the dat
 The optimal detection strategy (Neyman-Pearson lemma) consists of comparing this ratio to a threshold.
 """)
 
+
+st.success("""
+##### ✨ My contribution
+
+The **Likelihood Ratio** test had **never been applied** to the output distributions of a Kernel Nuller before this work.
+
+This study demonstrates that the **median** is not only the best practical estimator among those considered, but it also performs **close to the theoretical optimum** defined by the Likelihood Ratio.
+""")
+
 lr_tabs = st.tabs(["Gaussian Case", "Laplacian Case", "Cauchy Case"])
 
 with lr_tabs[0]:

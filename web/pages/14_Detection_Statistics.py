@@ -167,6 +167,12 @@ with ts_tabs[5]:
     $$
     """)
 
+st.success("""
+##### ✨ My contribution
+
+My work demonstrates that the **median** generally proves to be the most powerful test among those tested so far for detecting the presence of a planet in the context of Kernel-Nulling.
+""")
+
 st.divider()
 
 # --- Simulation ---

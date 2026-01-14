@@ -99,7 +99,6 @@ Development of the Kernel-Nulling On-Sky Contribution Map. I adapted the image r
 st.divider()
 
 # --- Configuration ---
-st.subheader("Configuration")
 
 # Context Widget
 presets = {
@@ -126,19 +125,17 @@ def setup_context(c: Context) -> Context:
 default_ctx = copy(presets["VLTI"])
 default_ctx = setup_context(default_ctx)
 
+# --- Simulation Parameters ---
+st.subheader("Simulation Parameters")
+
 ctx = context_widget(
     key_prefix="os_contrib",
     presets=presets,
     default_preset="VLTI",
-    expanded=True,
+    expanded=False,
     show_advanced=True,
     initial_context=default_ctx,
 )
-
-st.divider()
-
-# --- Simulation Parameters ---
-st.subheader("Simulation Parameters")
 
 col1, col2 = st.columns(2)
 
