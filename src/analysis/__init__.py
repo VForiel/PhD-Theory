@@ -18,19 +18,4 @@ from . import distrib_test_statistics
 from . import temporal_response
 from . import demonstration
 from . import wavelength_scan
-
-__all__ = [
-    'projected_telescopes',
-    'transmission_maps',
-    'sky_contribution',
-    'calibration',
-    'manual_control',
-    'neural_calibration',
-    'data_representations',
-    'noise_sensitivity',
-    'distribution_model',
-    'distrib_test_statistics',
-    'temporal_response',
-    'demonstration',
-    'wavelength_scan',
-]
+from . import image_reconstruction
