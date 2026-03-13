@@ -1,8 +1,0 @@
-pytest
-numpy
-astropy
-scipy
-numba
-toml
-ipywidgets
-torch

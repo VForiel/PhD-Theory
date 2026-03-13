@@ -1,3 +1,0 @@
-# 🤝 Contribute
-
-> Not yet documented.

@@ -34,18 +34,6 @@ def obstruction_approach(ctx: Context=None, n: int=1000, figsize=(10, 10), save_
     print_kernel_null_depth_lab_space_atm(ctx)
     return ctx
 
-def abcd_approach(ctx: Context=None, n_loops: int=2, n_final_samples: int=64, figsize=(12, 6), verbose: bool=False, save_as=None):
-    if ctx is None:
-        ctx = Context.get_VLTI()
-    else:
-        ctx = copy(ctx)
-    ctx.Γ = 0 * u.nm
-    ctx.target.companions = []
-    print_kernel_null_depth_lab_space_atm(ctx)
-    ctx.calibrate_abcd(n_loops=n_loops, n_final_samples=n_final_samples, plot=True, verbose=verbose, figsize=figsize, save_as=save_as)
-    print_kernel_null_depth_lab_space_atm(ctx)
-    return ctx
-
 def print_kernel_null_depth_lab_space_atm(ctx: Context):
     ctx = copy(ctx)
     ctx.Γ = 0 * u.nm

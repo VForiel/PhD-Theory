@@ -1,3 +1,6 @@
+# Core
+phise
+
 # Scientific computing
 numpy>=1.21.0
 matplotlib>=3.5.0
@@ -33,3 +36,11 @@ joblib
 ipywidgets
 toml
 tqdm
+pytest
+numpy
+astropy
+scipy
+numba
+toml
+ipywidgets
+torch
