@@ -18,24 +18,21 @@ from phise.classes import Context
 from phise.classes import Companion, Target, Telescope, SuperKN, Interferometer, Camera
 from phise.modules import *
 
-def gui(λ: u.Quantity=None, φ: u.Quantity=None, σ: u.Quantity=None):
-    """"gui.
+def gui(ctx: Context=None, λ: u.Quantity=None, φ: u.Quantity=None, σ: u.Quantity=None):
 
-Parameters
-----------
-(Automatically added placeholder.)
+    if ctx is not None:
+        ref_ctx = ctx
+    else:
+        ref_ctx = Context.get_VLTI()
 
-Returns
--------
-(Automatically added placeholder.)
-"""
-    ref_ctx = Context.get_VLTI()
     if λ is not None:
         ref_ctx.interferometer.λ = λ
+    λ = ref_ctx.interferometer.λ
     if φ is not None:
         ref_ctx.interferometer.chip.φ = φ
     if σ is not None:
         ref_ctx.interferometer.chip.σ = σ
+
     step = 1e-20
     IA_sliders = [widgets.FloatSlider(value=0.5, min=0, max=0.5, step=step, description=f'I{i + 1}', continuous_update=False) for i in range(4)]
     IP_sliders = [widgets.FloatSlider(value=0, min=0, max=λ.value, step=step, description=f'I{i + 1}', continuous_update=False) for i in range(4)]
@@ -44,17 +41,8 @@ Returns
         P_sliders[i].value = ref_ctx.interferometer.chip.φ[i].to(λ.unit).value
 
     def beam_repr(beam: complex) -> str:
-        """"beam_repr.
-
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
         return f'<b>{np.abs(beam):.2e}</b> * exp(<b>{np.angle(beam) / np.pi:.2f}</b> pi i)'
+
     # HTML widgets for displaying values
     inputs = [widgets.HTML(value=f' ') for _ in range(4)]
     bright_output = widgets.HTML(value=f' ')
@@ -62,16 +50,6 @@ Returns
     kernel_outputs = [widgets.HTML(value=f' ') for _ in range(3)]
 
     def update_gui(*args):
-        """"update_gui.
-
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
         ctx = copy(ref_ctx)
         ψ = np.array([IA_sliders[i].value * np.exp(1j * IP_sliders[i].value / λ.value * 2 * np.pi) for i in range(4)])
         for i in range(14):
