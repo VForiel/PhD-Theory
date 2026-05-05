@@ -15,6 +15,7 @@ if str(WEB) not in sys.path:
     sys.path.insert(0, str(WEB))
 
 from phise import Context
+from phise.examples import contexts as phise_contexts
 from utils.context_widget import context_widget
 from phise.modules import test_statistics as ts
 import importlib
@@ -182,8 +183,9 @@ st.header("Simulation & Analysis")
 ctx = context_widget(
     key_prefix="stats",
     presets={
-        "Life (Nulling)": Context.get_LIFE(),
-        "VLTI": Context.get_VLTI()
+        "Life (Nulling)": phise_contexts.get_LIFE(),
+        "VLTI": phise_contexts.get_VLTI(),
+        "PHOB": phise_contexts.get_PHOB(),
     },
     default_preset="VLTI",
     expanded=False,

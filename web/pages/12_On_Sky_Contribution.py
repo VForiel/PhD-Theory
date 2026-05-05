@@ -29,6 +29,7 @@ except ImportError:
     from analysis.sky_contribution import sky_contribution as sc_module
 
 from phise import Context
+from phise.examples import contexts as phise_contexts
 from utils.context_widget import context_widget
 
 # --- Mock tqdm for Streamlit Progress ---
@@ -102,8 +103,9 @@ st.divider()
 
 # Context Widget
 presets = {
-    "VLTI": Context.get_VLTI(),
-    "LIFE": Context.get_LIFE(),
+    "VLTI": phise_contexts.get_VLTI(),
+    "LIFE": phise_contexts.get_LIFE(),
+    "PHOB": phise_contexts.get_PHOB(),
 }
 
 def setup_context(c: Context) -> Context:

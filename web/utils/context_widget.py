@@ -21,6 +21,7 @@ if SRC.exists() and str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
 from phise import Context
+from phise.examples import contexts as phise_contexts
 from phise.classes import Interferometer, Telescope, Camera, Target, Companion
 from phise.classes.archs import SuperKN
 
@@ -51,13 +52,14 @@ def context_widget(
     # Initialize presets
     if presets is None:
         presets = {
-            "VLTI": Context.get_VLTI(),
-            "LIFE": Context.get_LIFE(),
+            "VLTI": phise_contexts.get_VLTI(),
+            "LIFE": phise_contexts.get_LIFE(),
+            "PHOB": phise_contexts.get_PHOB(),
         }
 
     def load_preset_logic(preset_name: str) -> Context:
         """Helper to load and modify a preset."""
-        return copy(presets.get(preset_name, Context.get_VLTI()))
+        return copy(presets.get(preset_name, phise_contexts.get_VLTI()))
 
     # Session state key
     ctx_key = f"{key_prefix}_context"
@@ -470,13 +472,14 @@ def simple_context_selector(
 
     if presets is None:
         presets = {
-            "VLTI": Context.get_VLTI(),
-            "LIFE": Context.get_LIFE(),
+            "VLTI": phise_contexts.get_VLTI(),
+            "LIFE": phise_contexts.get_LIFE(),
+            "PHOB": phise_contexts.get_PHOB(),
         }
 
     ctx_key = f"{key_prefix}_context"
     if ctx_key not in st.session_state:
-        st.session_state[ctx_key] = copy(presets.get(default_preset, Context.get_VLTI()))
+        st.session_state[ctx_key] = copy(presets.get(default_preset, phise_contexts.get_VLTI()))
 
     # Compact layout
     st.caption("Context Configuration")

@@ -19,3 +19,4 @@ from . import temporal_response
 from . import demonstration
 from . import wavelength_scan
 from . import image_reconstruction
+from . import hooke_jeeves

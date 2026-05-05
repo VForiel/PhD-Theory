@@ -25,6 +25,7 @@ if str(WEB) not in sys.path:
     sys.path.insert(0, str(WEB))
 
 from phise import Context
+from phise.examples import contexts as phise_contexts
 from utils.context_widget import context_widget
 from src import analysis
 
@@ -125,8 +126,9 @@ st.divider()
 st.subheader("Calibration")
 
 presets = {
-    "VLTI": Context.get_VLTI(),
-    "LIFE": Context.get_LIFE(),
+    "VLTI": phise_contexts.get_VLTI(),
+    "LIFE": phise_contexts.get_LIFE(),
+    "PHOB": phise_contexts.get_PHOB(),
 }
 base_ctx = context_widget(
     key_prefix="calib",

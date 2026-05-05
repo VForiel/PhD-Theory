@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.signal import periodogram
 import astropy.units as u
 from phise import Context, Companion
+from phise.examples import contexts as phise_contexts
 from copy import deepcopy
 import sys
 from pathlib import Path
@@ -48,8 +49,9 @@ Application of the Modulation Spectrum to Kernel-Nulling for multi-planet detect
 st.subheader("Configuration")
 
 presets = {
-    "VLTI": Context.get_VLTI(),
-    "LIFE": Context.get_LIFE(),
+    "VLTI": phise_contexts.get_VLTI(),
+    "LIFE": phise_contexts.get_LIFE(),
+    "PHOB": phise_contexts.get_PHOB(),
 }
 
 base_ctx = context_widget(

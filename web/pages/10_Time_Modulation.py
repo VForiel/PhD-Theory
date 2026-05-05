@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import astropy.units as u
 from phise import Context, Companion
+from phise.examples import contexts as phise_contexts
 from copy import deepcopy
 import pandas as pd
 import sys
@@ -45,8 +46,9 @@ st.divider()
 st.subheader("Configuration")
 
 presets = {
-    "VLTI": Context.get_VLTI(),
-    "LIFE": Context.get_LIFE(),
+    "VLTI": phise_contexts.get_VLTI(),
+    "LIFE": phise_contexts.get_LIFE(),
+    "PHOB": phise_contexts.get_PHOB(),
 }
 
 # The context widget handles instrument/target/wavelength basics

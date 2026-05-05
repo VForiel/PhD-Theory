@@ -29,6 +29,7 @@ except ImportError:
     from phise.modules import coordinates
 
 from phise import Context
+from phise.examples import contexts as phise_contexts
 from utils.context_widget import context_widget
 
 # --- Mock tqdm ---
@@ -82,8 +83,9 @@ st.divider()
 # --- Configuration ---
 
 presets = {
-    "VLTI": Context.get_VLTI(),
-    "LIFE": Context.get_LIFE(),
+    "VLTI": phise_contexts.get_VLTI(),
+    "LIFE": phise_contexts.get_LIFE(),
+    "PHOB": phise_contexts.get_PHOB(),
 }
 
 def setup_context(c: Context) -> Context:
