@@ -2,6 +2,4 @@ metrics:
 - sum(Ni)/B
 - max(Ni)/B
 - sum(Ni)
-- sum(Ni^2/B^2)
-- sum(Ni^2)
 samples: 1000

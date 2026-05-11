@@ -30,6 +30,14 @@ def max_flux(outputs):
     bounded_outputs = bound_outputs(outputs)
     return np.max(bounded_outputs[1:])
 
+def distance_normalized(outputs):
+    bounded_outputs = bound_outputs(outputs)
+    return np.sum(bounded_outputs[1:]**2 / bounded_outputs[0])
+
+def distance(outputs):
+    bounded_outputs = bound_outputs(outputs)
+    return np.sum(bounded_outputs[1:]**2 / bounded_outputs[0])
+
 # Data generation -------------------------------------------------------------
 
 def _run_single_calibration(task):
@@ -62,10 +70,10 @@ def _run_single_calibration(task):
         "final_metrics": final_metrics,
     }
 
-def generate_data(ctx, metrics, samples=1000):
+def generate_data(ctx, metrics, samples=1000, force=False):
 
     # Check if data already exists in cache
-    if os.path.exists("data.npz") and os.path.exists("data.yml"):
+    if os.path.exists("data.npz") and os.path.exists("data.yml") and not force:
         with open("data.yml", "r") as f:
             metadata = yaml.safe_load(f)
         
@@ -104,9 +112,9 @@ def generate_data(ctx, metrics, samples=1000):
         final_metrics_vector = result["final_metrics"]
 
         if depths_histories is None:
-            depths_histories = np.empty((nb_metrics, nb_runs, *depths_history.shape), dtype=float)
-            metrics_histories = np.empty((nb_metrics, nb_runs, *metric_history.shape), dtype=float)
-            final_metrics = np.empty((nb_metrics, nb_runs, *final_metrics_vector.shape), dtype=float)
+            depths_histories = np.empty((nb_metrics, samples, *depths_history.shape), dtype=float)
+            metrics_histories = np.empty((nb_metrics, samples, *metric_history.shape), dtype=float)
+            final_metrics = np.empty((nb_metrics, samples, *final_metrics_vector.shape), dtype=float)
 
         depths_histories[metric_index, sample_index, :] = depths_history
         metrics_histories[metric_index, sample_index, :] = metric_history
@@ -330,4 +338,116 @@ def plot_final_null_depth_distributions(data, bins=60, density=False, figsize=No
     fig.tight_layout()
     stats_df = pd.DataFrame(distribution_stats)
     return fig, axes, stats_df
+
+
+def plot_metric_evolution(data, figsize=None, yscale="log"):
+    """Plot the evolution of each calibration metric across iterations.
+
+    For each metric used during calibration, this function summarizes the
+    iteration-wise distribution across Monte Carlo samples using:
+    minimum, maximum, median, and the 5th/95th percentiles.
+
+    Parameters
+    ----------
+    data : dict or numpy.lib.npyio.NpzFile
+        Output returned by :func:`generate_data`.
+        Must contain ``metrics_histories`` with shape
+        ``(n_calibration_metrics, n_samples, n_steps)``.
+        If present, ``metric_names`` is used for subplot titles.
+    figsize : tuple[float, float] or None, default=None
+        Matplotlib figure size. If None, an automatic size is used.
+    yscale : str, default="log"
+        Y-axis scaling. Typical values are ``"log"`` and ``"linear"``.
+
+    Returns
+    -------
+    tuple[matplotlib.figure.Figure, numpy.ndarray, pandas.DataFrame]
+        The figure, the flattened array of axes, and a DataFrame containing
+        per-iteration summary statistics for each metric.
+    """
+    metrics_histories = np.asarray(data["metrics_histories"], dtype=float)
+
+    if metrics_histories.ndim != 3:
+        raise ValueError(
+            "Expected data['metrics_histories'] to have shape "
+            "(n_calibration_metrics, n_samples, n_steps)."
+        )
+
+    n_calibration_metrics, n_samples_axis, n_steps = metrics_histories.shape
+    metric_names = data["metric_names"]
+
+    sample_count = n_samples_axis
+    if os.path.exists("data.yml"):
+        with open("data.yml", "r") as metadata_file:
+            metadata = yaml.safe_load(metadata_file) or {}
+        metadata_samples = metadata.get("samples")
+        if isinstance(metadata_samples, int) and metadata_samples > 0:
+            sample_count = min(sample_count, metadata_samples)
+
+    metrics_histories = metrics_histories[:, :sample_count, :]
+
+    if figsize is None:
+        figsize = (8.0, 3.2 * n_calibration_metrics)
+
+    fig, axes = plt.subplots(n_calibration_metrics, 1, figsize=figsize, squeeze=False)
+    axes = axes.ravel()
+    iteration_axis = np.arange(1, n_steps + 1)
+    summary_rows = []
+
+    for calibration_metric_index, ax in enumerate(axes):
+        metric_history = metrics_histories[calibration_metric_index]
+        metric_name = metric_names[calibration_metric_index]
+
+        with np.errstate(all="ignore"):
+            min_history = np.nanmin(metric_history, axis=0)
+            max_history = np.nanmax(metric_history, axis=0)
+            median_history = np.nanmedian(metric_history, axis=0)
+            p5_history = np.nanpercentile(metric_history, 5, axis=0)
+            p95_history = np.nanpercentile(metric_history, 95, axis=0)
+
+        valid_iterations = np.isfinite(median_history)
+        if yscale == "log":
+            valid_iterations &= (
+                (min_history > 0)
+                & (max_history > 0)
+                & (median_history > 0)
+                & (p5_history > 0)
+                & (p95_history > 0)
+            )
+
+        x = iteration_axis[valid_iterations]
+        ymin = min_history[valid_iterations]
+        ymax = max_history[valid_iterations]
+        yp5 = p5_history[valid_iterations]
+        yp95 = p95_history[valid_iterations]
+        ymed = median_history[valid_iterations]
+
+        ax.fill_between(x, ymin, ymax, alpha=0.15, color="C0", label="min-max")
+        ax.fill_between(x, yp5, yp95, alpha=0.20, color="C1", label="5th-95th percentile")
+        ax.plot(x, ymed, color="C3", linewidth=2.0, label="median")
+        ax.plot(x, yp5, color="C1", linestyle="--", linewidth=1.0, alpha=0.9, label="5th percentile")
+        ax.plot(x, yp95, color="C1", linestyle="--", linewidth=1.0, alpha=0.9, label="95th percentile")
+        ax.set_title(f"Evolution of {metric_name}")
+        ax.set_xlabel("Iteration")
+        ax.set_ylabel("Metric value")
+        ax.set_yscale(yscale)
+        ax.grid(alpha=0.2)
+        ax.legend(fontsize=8)
+
+        for idx, iteration in enumerate(x):
+            summary_rows.append(
+                {
+                    "calibration_metric": metric_name,
+                    "iteration": int(iteration),
+                    "min": float(ymin[idx]),
+                    "max": float(ymax[idx]),
+                    "median": float(ymed[idx]),
+                    "p5": float(yp5[idx]),
+                    "p95": float(yp95[idx]),
+                }
+            )
+
+    fig.tight_layout()
+    summary_df = pd.DataFrame(summary_rows)
+    return fig, axes, summary_df
 

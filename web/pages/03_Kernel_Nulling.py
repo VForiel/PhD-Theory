@@ -334,9 +334,9 @@ psi_planet_batch_in = np.tile(psi_planet, (n_samples, 1)) # (N, 4)
 psi_star_batch = phase.shift_jit(psi_star_batch_in, dist_pistons.to(u.m).value, wl.to(u.m).value)
 psi_planet_batch = phase.shift_jit(psi_planet_batch_in, dist_pistons.to(u.m).value, wl.to(u.m).value)
 
-# Propagate through Chip
-star_outs = ctx.interferometer.chip.get_output_fields(psi_star_batch, wl) # (N, 7)
-planet_outs = ctx.interferometer.chip.get_output_fields(psi_planet_batch, wl) # (N, 7)
+# Propagate through Chip (get_output_fields_jit expects 1D input, so we loop over the batch)
+star_outs = np.array([ctx.interferometer.chip.get_output_fields(psi, wl) for psi in psi_star_batch])   # (N, 7)
+planet_outs = np.array([ctx.interferometer.chip.get_output_fields(psi, wl) for psi in psi_planet_batch]) # (N, 7)
 
 # Intensities (Detectors)
 I_star = np.abs(star_outs)**2
@@ -449,10 +449,8 @@ with st.spinner("Computing transmission maps..."):
     psi_grid = np.exp(1j * phi_grid) # (M, 4) complex inputs
     
     # Propagate through Kernel Nuller (No Piston Error)
-    # We use batch processing
-    # Note: SuperKN handles batch. Since opd/sigma are not batch here (static), we just pass (M, 4) psi.
-    
-    outs_grid = ctx.interferometer.chip.get_output_fields(psi_grid, wl) # (M, 7)
+    # get_output_fields_jit expects 1D input, so we loop over the grid
+    outs_grid = np.array([ctx.interferometer.chip.get_output_fields(psi, wl) for psi in psi_grid]) # (M, 7)
     
     # Normalize by number of telescopes to get transmission relative to total input flux
     n_tel = 4 # Kernel Nuller is 4T

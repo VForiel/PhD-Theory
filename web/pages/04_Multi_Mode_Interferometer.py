@@ -10,25 +10,11 @@ This page provides an interactive interface to:
 Adapted from HELIOS examples/14_mmi_streamlit.py for PHISE.
 """
 
-import sys
-from pathlib import Path
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-import importlib
 
-# --- Path Setup ---
-ROOT = Path(__file__).parent.parent.parent
-# Ensure project root is on path so `src` is importable
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
-
-import phise.modules.mmi as mmi_module
-
-# Ensure latest version of the plotting helpers (Streamlit keeps modules cached)
-importlib.reload(mmi_module)
-
-from phise.modules.mmi import (
+from helios.sim.mmi import (
     simulate,
     calibrate_input_phases_genetic,
     calibrate_n_core_and_phases,
