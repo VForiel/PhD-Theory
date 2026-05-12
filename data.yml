@@ -1,5 +1,0 @@
-metrics:
-- sum(Ni)/B
-- max(Ni)/B
-- sum(Ni)
-samples: 1000
