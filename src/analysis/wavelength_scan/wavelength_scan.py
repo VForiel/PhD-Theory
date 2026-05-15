@@ -13,6 +13,7 @@ except Exception:
 from copy import deepcopy as copy
 import astropy.units as u
 from scipy import stats
+import phise
 from phise.classes.context import Context
 from phise.modules import utils
 from io import BytesIO
@@ -28,7 +29,7 @@ def run(ctx: Context=None, scan_range=0.2 * u.um, obs_bandwidth=0 * u.um, n=11, 
 
     # 2. Build Base Context
     if ctx is None:
-        ctx = Context.get_VLTI()
+        ctx = phise.examples.contexts.get_VLTI()
         ctx.interferometer.chip.σ = np.zeros(14) * u.m  # Default ideal if None
     
     base_ctx = copy(ctx)

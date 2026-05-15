@@ -9,10 +9,11 @@ from scipy.stats import linregress
 from copy import deepcopy as copy
 from phise import Context
 from phise.modules import utils
+import phise.examples.contexts as contexts
 
 def genetic_approach(ctx: Context=None, β: float=0.9, verbose=False, figsize=(10, 10), σ_rms=None, save_as=None):
     if ctx is None:
-        ctx = Context.get_VLTI()
+        ctx = contexts.get_VLTI()
     else:
         ctx = copy(ctx)
     ctx.Γ = 0 * u.nm
@@ -24,7 +25,7 @@ def genetic_approach(ctx: Context=None, β: float=0.9, verbose=False, figsize=(1
 
 def obstruction_approach(ctx: Context=None, n: int=1000, figsize=(10, 10), save_as=None):
     if ctx is None:
-        ctx = Context.get_VLTI()
+        ctx = contexts.get_VLTI()
     else:
         ctx = copy(ctx)
     ctx.Γ = 0 * u.nm
@@ -69,7 +70,7 @@ def print_kernel_null_depth(ctx: Context, N=100):
 
 def compare_approaches(ctx: Context=None, β: float=0.9, n: int=10000, figsize=(10, 10), save_as=None):
     if ctx is None:
-        ctx = Context.get_VLTI()
+        ctx = contexts.get_VLTI()
         ctx.monochromatic = True
     else:
         ctx = copy(ctx)

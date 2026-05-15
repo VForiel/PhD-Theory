@@ -9,9 +9,10 @@ import astropy.units as u
 from scipy.optimize import minimize
 from scipy import stats
 from phise import Context
+import phise
 from phise.modules import utils
 from phise.modules.test_statistics import ALL_TESTS
-import phise.modules.test_statistics as ts
+import phise.modules.test_statistics as ts_module
 import scipy.special
 from phise.modules import utils
 
@@ -36,7 +37,7 @@ def plot_rocs(t0: np.ndarray, t1: np.ndarray, tests: dict=ALL_TESTS, figsize=(6,
     for (name, test) in tests.items():
         (pfa, pdet, thresholds) = roc(t0, t1, test)
         plt.plot(pfa, pdet, label=f'{name}')
-        power = np.round(np.abs(np.trapz(pdet - pfa, pfa)) * 200, 2)
+        power = np.round(np.abs(np.trapezoid(pdet - pfa, pfa)) * 200, 2)
         print(f'Power of {name}: {power}%')
     plt.plot([0, 1], [0, 1], 'k--', label='Random')
     plt.xlabel('False Positive Rate')
@@ -62,12 +63,12 @@ def test_power(ctx=None, tests=ALL_TESTS, nmc=100, bootstrap=10, resolution=10, 
     nb_values = np.logspace(1, np.log10(maxpoints), resolution, endpoint=True).astype(int)
     auc_bootstrap = copy(tests)
     power_bootstrap = copy(tests)
-    for (ts_name, ts) in tests.items():
+    for (ts_name, test_fn) in tests.items():
         auc_bootstrap[ts_name] = []
         power_bootstrap[ts_name] = []
     for b in range(bootstrap):
         print('=' * 10, f'\nBootstrap {b + 1}/{bootstrap}...\n', '=' * 10, sep='')
-        (t0, t1) = ts.get_vectors(ctx=ctx, nmc=nmc, size=maxpoints)
+        (t0, t1) = ts_module.get_vectors(ctx=ctx, nmc=nmc, size=maxpoints)
         dataset = []
         for nb in nb_values:
             indices = np.random.choice(t0.shape[1], nb, replace=False)
@@ -75,22 +76,22 @@ def test_power(ctx=None, tests=ALL_TESTS, nmc=100, bootstrap=10, resolution=10, 
             t1_subset = t1[:, indices]
             dataset.append((t0_subset, t1_subset))
         print(f'Computing tests power...', end='\r')
-        for (ts_name, ts) in tests.items():
+        for (ts_name, test_fn) in tests.items():
             auc = np.zeros(len(dataset))
             power = np.zeros(len(dataset))
             for (i, (t0, t1)) in enumerate(dataset):
-                (pfa, pdet, _) = roc(t0=t0, t1=t1, test=ts)
+                (pfa, pdet, _) = roc(t0=t0, t1=t1, test=test_fn)
                 (pfa, pdet) = zip(*sorted(zip(pfa, pdet)))
                 pfa = np.array(pfa)
                 pdet = np.array(pdet)
-                auc[i] = np.round(np.abs(np.trapz(pdet - pfa, pfa)) * 200, 2)
+                auc[i] = np.round(np.abs(np.trapezoid(pdet - pfa, pfa)) * 200, 2)
                 power[i] = np.round(pdet[np.argmax(pfa[pfa <= 0.01])] * 100, 2)
             auc_bootstrap[ts_name].append(auc)
             power_bootstrap[ts_name].append(power)
         print('Done computing tests power ✅')
     (_, axs) = plt.subplots(1, 2, figsize=(12, 6))
     colors = plt.cm.gist_rainbow(np.linspace(0, 1, len(tests)))
-    for (i, (ts_name, ts)) in enumerate(tests.items()):
+    for (i, (ts_name, test_fn)) in enumerate(tests.items()):
         auc_mean = np.mean(auc_bootstrap[ts_name], axis=0)
         power_mean = np.mean(power_bootstrap[ts_name], axis=0)
         auc_std = np.std(auc_bootstrap[ts_name], axis=0)
@@ -160,7 +161,7 @@ def np_benchmark(ctx: Context=None, save_as=None):
 
     # Build H1 context
     if ctx is None:
-        ctx = Context.get_VLTI()
+        ctx = phise.examples.contexts.get_VLTI()
         ctx.interferometer.chip.σ = np.zeros(14) * u.nm
         ctx.target.companions[0].c = 0.001
         ctx.monochromatic = False
@@ -193,11 +194,11 @@ def np_benchmark(ctx: Context=None, save_as=None):
     def imb_cost(params, data):
         μ, σ, ν = params
         pdf_vals = imb(data, μ, σ, ν)
-        pdf_vals /= np.trapz(pdf_vals, data)
+        pdf_vals /= np.trapezoid(pdf_vals, data)
         hist_vals, bin_edges = np.histogram(data, bins=bins, density=True)
         bin_centers = (bin_edges[:-1] + bin_edges[1:]) / 2
         model_vals = imb(bin_centers, μ, σ, ν)
-        model_vals /= np.trapz(model_vals, bin_centers)
+        model_vals /= np.trapezoid(model_vals, bin_centers)
         cost = np.sum((hist_vals - model_vals) ** 2)
         return cost
 

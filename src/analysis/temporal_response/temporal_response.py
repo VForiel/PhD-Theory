@@ -15,6 +15,34 @@ import ipywidgets as widgets
 from IPython.display import display
 from phise.classes import Companion
 from phise.modules import utils
+from phise.examples import contexts
+
+
+def _series_kernels_and_bright(ctx: Context, n: int = 1):
+    """Return kernel outputs and bright output from ``Context.observation_serie``.
+
+    The PHISE API may return either a legacy tuple ``(data, kernels, bright)``
+    or a raw output array. This helper normalizes both formats.
+    """
+    serie = ctx.observation_serie(n=n)
+
+    # Legacy API: (data, kernels, bright)
+    if isinstance(serie, tuple) and len(serie) == 3:
+        return serie[1][0], serie[2][0]
+
+    # Current API: ndarray with shape (n, n_h, n_outs) or (n_h, n_outs)
+    outs = np.asarray(serie)
+    if outs.ndim == 3:
+        outs = outs[0]
+    if outs.ndim != 2:
+        raise ValueError(f"Unexpected observation_serie shape: {outs.shape}")
+
+    kernels = np.empty((outs.shape[0], 3), dtype=float)
+    for i in range(outs.shape[0]):
+        kernels[i] = ctx.interferometer.chip.process_outputs(outs[i])
+    bright = outs[:, 0]
+    return kernels, bright
+
 
 def gui(ctx: Context=None):
     """
@@ -26,7 +54,7 @@ def gui(ctx: Context=None):
         The context to use for the analysis.
     """
     if ctx is None:
-        ctx = Context.get_VLTI()
+        ctx = contexts.get_VLTI()
         ctx.Δh = 24 * u.hourangle
         ctx.interferometer.chip.σ = np.zeros(14) * u.nm
         ctx.interferometer.chip.φ = np.zeros(14) * u.um
@@ -81,9 +109,7 @@ Returns
                 tmp2_ctx.target.companions = [tmp_ctx.target.companions[i]]
             else:
                 tmp2_ctx.target.companions = tmp_ctx.target.companions
-            (d, k, b) = tmp2_ctx.observation_serie(n=1)
-            k = k[0, :, :]
-            b = b[0, :]
+            k, b = _series_kernels_and_bright(tmp2_ctx, n=1)
             h_range = tmp_ctx.get_h_range()
             for kernel in range(3):
                 k[:, kernel] /= b
@@ -169,9 +195,7 @@ Returns
                 tmp2_ctx.target.companions = [tmp_ctx.target.companions[i]]
             else:
                 tmp2_ctx.target.companions = tmp_ctx.target.companions
-            (d, k, b) = tmp2_ctx.observation_serie(n=1)
-            k = k[0, :, :]
-            b = b[0, :]
+            k, b = _series_kernels_and_bright(tmp2_ctx, n=1)
             h_range = tmp_ctx.get_h_range()
             for kernel in range(3):
                 k[:, kernel] /= b
@@ -183,9 +207,7 @@ Returns
                 ax.set_xlabel('Hour Angle (h)')
                 ax.set_ylabel('Kernel Value')
                 ax.legend()
-        
-        if save_as:
-            utils.save_plot(save_as, "temporal_response.png")
+
         plt.show()
 
     export_button.on_click(export_plot)
@@ -211,20 +233,11 @@ Returns
     selected_kernel = 0
 
     def model(params):
-        """"model.
-
-Parameters
-----------
-(Automatically added placeholder.)
-
-Returns
--------
-(Automatically added placeholder.)
-"""
+        """Evaluate temporal kernel model for optimizer parameters."""
         (θ, ρ) = params
         ideal_ctx.target.companions = [Companion(c=c_guess, ρ=ρ * u.mas, θ=θ * u.deg, name='Companion')]
-        (_, k, _) = ideal_ctx.observation_serie(n=1)
-        return k[0, :, selected_kernel]
+        k, _ = _series_kernels_and_bright(ideal_ctx, n=1)
+        return k[:, selected_kernel]
 
     def cauchy_loss(params, x, y):
         """"cauchy_loss.
@@ -241,14 +254,15 @@ Returns
         residuals = y - model(params)
         return np.sum(np.log(1 + (residuals / γ) ** 2))
     x = ctx.get_h_range()
-    (d, k, b) = ctx.observation_serie(n=1)
-    y = k[0, :, selected_kernel]
+    k_obs, _ = _series_kernels_and_bright(ctx, n=1)
+    y = k_obs[:, selected_kernel]
     c_guess = ideal_ctx.target.companions[0].c
     params = np.array([θ_guess.to(u.deg).value, ρ_guess.to(u.mas).value])
     pop = minimize(cauchy_loss, params, args=(x.to(u.hourangle).value, y)).x
     print(x.shape, y.shape)
     plt.plot(x, model(pop), label='Fit', color='red')
-    plt.plot(x, ideal_ctx.observation_serie(n=1)[1][0, :, selected_kernel], label='Ideal', color='k', linestyle='--')
+    ideal_k, _ = _series_kernels_and_bright(ideal_ctx, n=1)
+    plt.plot(x, ideal_k[:, selected_kernel], label='Ideal', color='k', linestyle='--')
     plt.xlabel('Hour Angle')
     plt.ylabel('Kernel Value')
     plt.ylabel('Kernel Value')

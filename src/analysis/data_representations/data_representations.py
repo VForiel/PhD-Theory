@@ -592,16 +592,25 @@ def time_evolution(ctx: Context=None, n=100, map=np.median, save_as=None, show=T
         upstream_pistons = np.random.normal(0, ctx.Γ.value, size=(n, len(ctx.interferometer.telescopes))) * ctx.Γ.unit
 
         # Distrib with companion(s)
-        outs = ctx.observe(upstream_pistons=upstream_pistons)
-        data[i, :] = map(ctx.interferometer.chip.process_outputs(outs), axis=0)
+        kernels = np.empty((n, 3))
+        for j in range(n):
+            outs = ctx.observe(upstream_pistons=upstream_pistons[j])
+            kernels[j, :] = ctx.interferometer.chip.process_outputs(outs)
+        data[i, :] = map(kernels, axis=0)
         
         # Distrib with star only
-        outs_so = ctx_so.observe(upstream_pistons=upstream_pistons)
-        data_so[i, :] = map(ctx_so.interferometer.chip.process_outputs(outs_so), axis=0)
+        kernels_so = np.empty((n, 3))
+        for j in range(n):
+            outs_so = ctx_so.observe(upstream_pistons=upstream_pistons[j])
+            kernels_so[j, :] = ctx_so.interferometer.chip.process_outputs(outs_so)
+        data_so[i, :] = map(kernels_so, axis=0)
 
         # Distrib with planet only
-        outs_po = ctx_po.observe(upstream_pistons=upstream_pistons)
-        data_po[i, :] = map(ctx_po.interferometer.chip.process_outputs(outs_po), axis=0)
+        kernels_po = np.empty((n, 3))
+        for j in range(n):
+            outs_po = ctx_po.observe(upstream_pistons=upstream_pistons[j])
+            kernels_po[j, :] = ctx_po.interferometer.chip.process_outputs(outs_po)
+        data_po[i, :] = map(kernels_po, axis=0)
 
         # Reference data
         outs = ctx.observe()
