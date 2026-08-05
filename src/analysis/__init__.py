@@ -20,3 +20,4 @@ from . import demonstration
 from . import wavelength_scan
 from . import image_reconstruction
 from . import hooke_jeeves
+from . import detector_optimal_frame_size
