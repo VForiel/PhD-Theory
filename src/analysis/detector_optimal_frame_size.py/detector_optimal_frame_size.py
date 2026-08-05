@@ -12,6 +12,7 @@ the theoretical noise fluctuation expected in the window.
 
 import numpy as np
 import matplotlib.pyplot as plt
+import pltedit
 
 
 def gaussian_spot(image_shape, center, sigma, total_flux):
@@ -191,6 +192,7 @@ def plot_response(results):
 
     fig.suptitle("Square vs circular comparison — central capture and neighbor contamination")
     fig.tight_layout(rect=[0, 0, 1, 0.95])
+    pltedit.save(fig, "detector_optimal_frame_size.plt")
     plt.show()
 
 
