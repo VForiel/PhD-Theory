@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from .model_fitting.cmpce import fit_CMPCE
 from .model_fitting.mpce import fit_MPCE
 from .model_fitting.mpe import fit_MPE
+from .model_fitting.fpe import fit_FPE
 from .model_fitting.mpde import fit_MPDE
 from .model_fitting.dmpde import fit_DMPDE
 from .model_fitting.rmpre import fit_RMPRE
@@ -140,33 +141,34 @@ def plot_fit(scan_data: dict, model, modulations_params=None):
             predicted_all = np.array(predicted_all)  # Shape: (n_ramp, n_outputs)
             measured = measured_data[shifter_idx, :, :]  # Shape: (n_outputs, n_ramp)
 
+            markers = ["o", "s", "^", "D"]  # Different markers for each output
+
             # Plot each output with measured (solid) vs predicted (dashed)
             for output_idx in range(n_outputs):
                 ax.plot(
                     ramp,
                     measured[output_idx, :],
-                    "o",
+                    markers[output_idx],
                     color=colors[output_idx],
-                    label=f"Out {output_idx} (meas)",
+                    label=f"Output {output_idx}",
                     markersize=3,
                     linewidth=1.5,
                     alpha=0.6,
                 )
-                ax.plot(
-                    ramp,
-                    modulation(ramp, *modulations_params[active_inputs][shifter_idx, output_idx]),
-                    "-",
-                    color=colors[output_idx],
-                    label=f"Out {output_idx} (mod)",
-                    linewidth=1.5,
-                    alpha=0.9,
-                )
+                if modulations_params is not None:
+                    ax.plot(
+                        ramp,
+                        modulation(ramp, *modulations_params[active_inputs][shifter_idx, output_idx]),
+                        "--",
+                        color=colors[output_idx],
+                        linewidth=1.5,
+                        alpha=0.9,
+                    )
                 ax.plot(
                     ramp,
                     predicted_all[:, output_idx],
-                    "--",
+                    "-",
                     color=colors[output_idx],
-                    label=f"Out {output_idx} (pred)",
                     linewidth=1.5,
                     alpha=0.9,
                 )
@@ -176,7 +178,7 @@ def plot_fit(scan_data: dict, model, modulations_params=None):
             ax.set_ylabel("Intensity (a.u.)")
             ax.set_title(f"Shifter {shifter_idx}")
             ax.grid(True, alpha=0.3)
-            # ax.legend(fontsize=8, loc="best")
+            ax.legend(fontsize=8, loc="best")
             ax.set_xlim([0, 2 * np.pi])
             ax.set_xticks([0, np.pi / 2, np.pi, 3 * np.pi / 2, 2 * np.pi])
             ax.set_xticklabels(["0", "π/2", "π", "3π/2", "2π"])
