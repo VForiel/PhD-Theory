@@ -31,16 +31,8 @@ nbformat
 jupyterlab
 ipykernel
 fitter
-torch
 joblib
 ipywidgets
 toml
 tqdm
 pytest
-numpy
-astropy
-scipy
-numba
-toml
-ipywidgets
-torch
