@@ -7,11 +7,11 @@ def fit_MPE(scan_data: dict, return_metadata: bool, verbose=False):
 
     Model
     -----
-    I = |Cout @ M @ P @ Cin @ E|^2
+    I = |M @ P @ E|^2
     I: ndarray[float] of shape (4,) representing the output intensities at the 4 outputs of the chip
     E: ndarray[complex] of shape (4,) representing the input electric fields at the 4 inputs of the chip (each element can be either Eon,i of Eoff,i depending on whether the input i is active or not, knowing that a non-active input is not necessarily 0)
     P: ndarray[complex] of shape (4, 4) representing the applied phase shifts on the 4 inputs of the chip (diagonal matrix with elements exp(1j * φ_i) where φ_i is the phase shift applied on input i)
-    M: ndarray[complex] of shape (4, 4) representing the transfer matrix of the MMI (prior known from the design of the chip)
+    M: ndarray[complex] of shape (4, 4) representing the transfer matrix of the MMI (fixed and known from the design of the chip, considered ideal)
     | |^2 represent the element-wise modulus squared to get output intensities from output electric fields.
 
     Scan data format
@@ -42,7 +42,7 @@ def fit_MPE(scan_data: dict, return_metadata: bool, verbose=False):
         dtype=complex,
     )
 
-    # We aim to fit the complex parameters of Eon, Eoff, Cin and Cout, while P is known from the phase shifter settings during the scan.
+    # We aim to fit the complex parameters of Eon and Eoff, while M is fixed and P is known from the phase shifter settings during the scan.
 
     # Model flattening --------------------------------------------------------
 
@@ -84,7 +84,7 @@ def fit_MPE(scan_data: dict, return_metadata: bool, verbose=False):
 
     x_space, y_space = get_xy_space()
 
-    def pack_params(Eon, Eoff, M):
+    def pack_params(Eon, Eoff):
 
         Eon_flat = Eon.flatten()
         Eon_real = np.real(Eon_flat)
@@ -94,14 +94,9 @@ def fit_MPE(scan_data: dict, return_metadata: bool, verbose=False):
         Eoff_real = np.real(Eoff_flat)
         Eoff_imag = np.imag(Eoff_flat)
 
-        M_flat = M.flatten()
-        M_real = np.real(M_flat)
-        M_imag = np.imag(M_flat)
-
         return np.concatenate([
             Eon_real, Eon_imag,
             Eoff_real, Eoff_imag,
-            M_real, M_imag
         ])
 
     def unpack_params(params):
@@ -114,17 +109,13 @@ def fit_MPE(scan_data: dict, return_metadata: bool, verbose=False):
         Eoff_imag = params[12:16]
         Eoff = Eoff_real + 1j * Eoff_imag
 
-        M_real = params[16:32]
-        M_imag = params[32:48]
-        M = M_real.reshape(4, 4) + 1j * M_imag.reshape(4, 4)
-
-        return Eon, Eoff, M
+        return Eon, Eoff
 
     # Cost function for least squares optimization ----------------------------
 
     def unique_residual(x, y_true, params):
 
-        Eon, Eoff, M = unpack_params(params)
+        Eon, Eoff = unpack_params(params)
 
         # Build E
         inputs = x[:4].astype(bool)  # First 4 elements indicate active inputs
@@ -155,7 +146,7 @@ def fit_MPE(scan_data: dict, return_metadata: bool, verbose=False):
 
     # Least squares optimization ----------------------------------------------
 
-    x0 = pack_params(Eon, Eoff, M)
+    x0 = pack_params(Eon, Eoff)
 
     result = least_squares(
         fun=global_residuals,
@@ -167,20 +158,20 @@ def fit_MPE(scan_data: dict, return_metadata: bool, verbose=False):
         verbose=verbose,
     )
 
-    Eon_fit, Eoff_fit, M_fit = unpack_params(result.x)
+    Eon_fit, Eoff_fit = unpack_params(result.x)
 
     def model(active_inputs_tuple, phases_array):
         E = Eoff.copy()
         E[list(active_inputs_tuple)] = Eon_fit[list(active_inputs_tuple)]
         P = np.diag(np.exp(1j * phases_array))
-        return np.abs(M_fit @ P @ E)**2
+        return np.abs(M @ P @ E)**2
 
     if return_metadata:
         return {
             "model": model,
             "Eon": Eon_fit,
             "Eoff": Eoff_fit,
-            "M": M_fit,
+            "M": M,
             "cost": result.cost,
             "optimality": result.optimality,
             "success": result.success,
@@ -188,4 +179,4 @@ def fit_MPE(scan_data: dict, return_metadata: bool, verbose=False):
             "nfev": result.nfev,
         }
 
-    return model, Eon_fit, Eoff_fit, M_fit
+    return model, Eon_fit, Eoff_fit
